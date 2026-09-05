@@ -1,0 +1,14 @@
+﻿  NotePad.cpp
+C:\Users\GaoXing\Desktop\NotePad\NotePad\NotePad.cpp(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+C:\Users\GaoXing\Desktop\NotePad\NotePad\NotePad.cpp(78,53): error C2001: 字符串字面量中的换行符
+C:\Users\GaoXing\Desktop\NotePad\NotePad\NotePad.cpp(79,2): error C2146: 语法错误: 缺少“)”(在标识符“AppendMenuW”的前面)
+C:\Users\GaoXing\Desktop\NotePad\NotePad\NotePad.cpp(79,2): error C2146: 语法错误: 缺少“;”(在标识符“AppendMenuW”的前面)
+C:\Users\GaoXing\Desktop\NotePad\NotePad\NotePad.cpp(79,50): error C2001: 字符串字面量中的换行符
+C:\Users\GaoXing\Desktop\NotePad\NotePad\NotePad.cpp(81,2): error C2146: 语法错误: 缺少“)”(在标识符“HMENU”的前面)
+C:\Users\GaoXing\Desktop\NotePad\NotePad\NotePad.cpp(81,2): error C2146: 语法错误: 缺少“;”(在标识符“HMENU”的前面)
+C:\Users\GaoXing\Desktop\NotePad\NotePad\NotePad.cpp(88,55): error C2001: 字符串字面量中的换行符
+C:\Users\GaoXing\Desktop\NotePad\NotePad\NotePad.cpp(89,2): error C2146: 语法错误: 缺少“)”(在标识符“AppendMenuW”的前面)
+C:\Users\GaoXing\Desktop\NotePad\NotePad\NotePad.cpp(89,2): error C2146: 语法错误: 缺少“;”(在标识符“AppendMenuW”的前面)
+C:\Users\GaoXing\Desktop\NotePad\NotePad\NotePad.cpp(89,59): error C2001: 字符串字面量中的换行符
+C:\Users\GaoXing\Desktop\NotePad\NotePad\NotePad.cpp(90,2): error C2146: 语法错误: 缺少“)”(在标识符“AppendMenuW”的前面)
+C:\Users\GaoXing\Desktop\NotePad\NotePad\NotePad.cpp(90,2): error C2146: 语法错误: 缺少“;”(在标识符“AppendMenuW”的前面)

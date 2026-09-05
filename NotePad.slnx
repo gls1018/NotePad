@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="NotePad/NotePad.vcxproj" Id="62c6950e-1dce-4b43-b4ec-4340097f37a1" />
+</Solution>
