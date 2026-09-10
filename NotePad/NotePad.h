@@ -22,13 +22,32 @@ private:
 	bool CreateEditControl();
 	bool CreateEditFont();
 
+	bool Initilize();
+
 private:
 	bool OnWMCreate();
 	bool OnWMSize();
 	bool OnWMPaint();
-	bool OnWMCommand();
+	bool OnWMCommand(WPARAM wPara, LPARAM lPara);
 	bool OnWMSysCommand();
 
+
+// 实现查找功能
+private:
+	FINDREPLACEW m_FindReplace;
+	WCHAR m_FindBuffer[256]{ };
+	UINT m_WMFindReplaceMsg;
+	void ShowFindDialog();
+
+
+	
+private:
+	//实现 IDM_FILE_OPEN 
+	OPENFILENAMEW OpenFileName;
+	wchar_t FileNameBuffer[MAX_PATH] = { 0 };
+	bool OnOpenFile();
+	bool LoadTextFile();
+	HANDLE hOpenFile;   //打开的文件句柄
 
 private:
 	HINSTANCE m_hInstance; // 当前进程实例句柄

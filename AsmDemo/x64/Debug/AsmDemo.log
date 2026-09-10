@@ -1,0 +1,4 @@
+﻿  main.cpp
+C:\Users\GaoXing\Desktop\NotePad\AsmDemo\main.cpp(5,18): warning C4083: 应输入“字符串”；找到标识符“off”
+C:\Users\GaoXing\Desktop\NotePad\AsmDemo\main.cpp(17,18): warning C4083: 应输入“字符串”；找到标识符“on”
+  AsmDemo.vcxproj -> C:\Users\GaoXing\Desktop\NotePad\x64\Debug\AsmDemo.exe

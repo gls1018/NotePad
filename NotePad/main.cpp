@@ -6,6 +6,6 @@ int main()
 	NotePad app(GetModuleHandleW(NULL));
 	if (!app.Create())
 		return -1;
-	
+
 	return app.Run();
 }

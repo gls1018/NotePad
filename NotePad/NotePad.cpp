@@ -6,7 +6,9 @@
 #include <chrono>
 #include <print>
 #include <dwmapi.h>
+#include <Commdlg.h>
 #pragma comment(lib, "dwmapi.lib")
+#pragma comment(lib, "Comdlg32.lib")
 
 
 #define IDM_FILE_NEW 1001
@@ -35,6 +37,10 @@ NotePad::NotePad(HINSTANCE hIns)
 	this->m_hMainWindow = NULL;
 	this->m_hAccelTable = NULL;
 	this->m_hEditFont = NULL;
+
+
+
+	
 }
 
 NotePad::~NotePad()
@@ -79,6 +85,9 @@ LRESULT NotePad::HandleMessage(UINT msg, WPARAM wPara, LPARAM lPara)
 			OnWMSize();
 			break;
 
+		case WM_COMMAND:
+			OnWMCommand(wPara, lPara);
+			break;
 
 		case WM_DESTROY:
 			PostQuitMessage(0);
@@ -188,6 +197,28 @@ bool NotePad::CreateEditFont()
 	return true;
 }
 
+bool NotePad::Initilize()
+{
+	//IDM_FILE_OPEN 相关变量初始化
+	this->hOpenFile = NULL;
+	this->OpenFileName = { 0 };
+	OpenFileName.lStructSize = sizeof(OpenFileName);
+	OpenFileName.dwReserved = NULL;
+	OpenFileName.pvReserved = NULL;
+	OpenFileName.lpTemplateName = NULL;
+	OpenFileName.lpstrTitle = L"请选择要打开的文本文件";
+	OpenFileName.Flags = OFN_FILEMUSTEXIST | OFN_EXPLORER;
+
+	OpenFileName.hwndOwner = this->m_hMainWindow;
+	OpenFileName.hInstance = NULL;
+	OpenFileName.lpstrFile = FileNameBuffer;
+	OpenFileName.nMaxFile = MAX_PATH;
+	OpenFileName.lpstrFilter = L"文本文件 (*.txt)\0*.txt\0";
+	OpenFileName.lpstrInitialDir = L"C:\\";
+
+	return true;
+}
+
 bool NotePad::OnWMCreate()
 {
 	if (!this->CreateMenuBar())
@@ -202,6 +233,11 @@ bool NotePad::OnWMCreate()
 
 	if (!this->CreateEditFont())
 		return false;
+
+	//初始化相关变量
+	if (!this->Initilize())
+		return false;
+
 	return true;
 }
 
@@ -215,6 +251,100 @@ bool NotePad::OnWMSize()
 	if (!MoveWindow(this->m_hEditControl, 2, 2, width, height, TRUE))
 		return false;
 
+	return true;
+}
+
+bool NotePad::OnWMCommand(WPARAM wPara, LPARAM lPara)
+{
+	int Id = LOWORD(wPara);
+	switch (Id)
+	{
+		case IDM_FILE_OPEN:
+			this->OnOpenFile();
+			break;
+
+		case IDM_EDIT_FIND:
+			this->ShowFindDialog();
+			break;
+
+		default:
+			break;
+	}
+
+	return true;
+}
+
+void NotePad::ShowFindDialog()
+{
+	this->m_FindReplace = {};
+	this->m_FindReplace.lStructSize = sizeof(this->m_FindReplace);
+	this->m_FindReplace.lpstrFindWhat = this->m_FindBuffer;
+	this->m_FindReplace.wFindWhatLen = ARRAYSIZE(this->m_FindBuffer);
+	this->m_FindReplace.Flags = FR_DOWN;
+	this->m_FindReplace.hwndOwner = this->m_hMainWindow;
+	FindTextW(&this->m_FindReplace);
+}
+
+bool NotePad::OnOpenFile()
+{
+	BOOL bRes = GetOpenFileNameW(&OpenFileName);
+	if(!bRes)
+		throw std::runtime_error("GetOpenFileNameW Error\n");
+
+	return true;
+}
+
+bool NotePad::LoadTextFile()
+{
+	SECURITY_ATTRIBUTES se{0};
+	DWORD dwAccess = GENERIC_READ | GENERIC_WRITE;
+	this->hOpenFile = CreateFileW(FileNameBuffer, dwAccess, 0, &se, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hOpenFile == INVALID_HANDLE_VALUE)
+		throw std::runtime_error("CreateFile Error\n");
+
+	DWORD dwFileSize = GetFileSize(hOpenFile, NULL);
+	if (dwFileSize == INVALID_FILE_SIZE)
+	{
+		CloseHandle(this->hOpenFile);
+		this->hOpenFile = NULL;
+		throw std::runtime_error("GetFileSize Error\n");
+	}
+
+
+
+	std::vector<BYTE> buffer(dwFileSize);
+	DWORD dwByteRead = 0;
+	if (!ReadFile(hOpenFile, buffer.data(), dwFileSize, &dwByteRead, NULL))
+		throw std::runtime_error("ReadFile Error\n");
+
+	// 判断编码
+	if (dwByteRead >= 3 &&
+		buffer[0] == 0xEF &&
+		buffer[1] == 0xBB &&
+		buffer[2] == 0xBF)
+	{
+		//UTF-8 BOM
+
+	}
+	
+	else if (dwByteRead >= 2 &&
+		buffer[0] == 0xFF &&
+		buffer[1] == 0xFE)
+	{
+		// UTF-16 LE
+	}
+
+	else if (dwByteRead >= 2 &&
+		buffer[0] == 0xFE &&
+		buffer[1] == 0xFF)
+	{
+		// UTF-16 BE
+	}
+
+	else
+	{
+
+	}
 	return true;
 }
 

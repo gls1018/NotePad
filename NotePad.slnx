@@ -3,5 +3,6 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Project Path="AsmDemo/AsmDemo.vcxproj" Id="68831944-7cd5-4e4a-bc27-9229dc69c4fa" />
   <Project Path="NotePad/NotePad.vcxproj" Id="62c6950e-1dce-4b43-b4ec-4340097f37a1" />
 </Solution>
