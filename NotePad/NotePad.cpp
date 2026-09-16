@@ -37,9 +37,6 @@ NotePad::NotePad(HINSTANCE hIns)
 	this->m_hMainWindow = NULL;
 	this->m_hAccelTable = NULL;
 	this->m_hEditFont = NULL;
-
-
-
 	
 }
 
@@ -259,17 +256,55 @@ bool NotePad::OnWMCommand(WPARAM wPara, LPARAM lPara)
 	int Id = LOWORD(wPara);
 	switch (Id)
 	{
+		// MenuBar --> Open
 		case IDM_FILE_OPEN:
 			this->OnOpenFile();
 			break;
 
+		// MenuBar --> Find
 		case IDM_EDIT_FIND:
 			this->ShowFindDialog();
+			break;
+		
+		// Edit Control
+		case IDC_EDIT:
+			this->OnEditControlNotify(wPara, lPara);
 			break;
 
 		default:
 			break;
 	}
+
+	return true;
+}
+
+bool NotePad::OnWMSysCommand()
+{
+	return false;
+}
+
+// 处理 Edit 控件的 Notification Code.
+bool NotePad::OnEditControlNotify(WPARAM wPara, LPARAM lPara)
+{
+
+	WORD NotifyCode = HIWORD(wPara);
+	WORD EditCtrlId = LOWORD(wPara);
+	HWND hEditCtrl = (HWND)lPara;
+
+	switch (NotifyCode)
+	{
+		case EN_CHANGE:
+		{
+			std::cout << "EN_CHANGE\n";
+		} break;
+
+		case EN_UPDATE:
+			break;
+
+		default:
+			break;
+	}
+
 
 	return true;
 }

@@ -31,6 +31,9 @@ private:
 	bool OnWMCommand(WPARAM wPara, LPARAM lPara);
 	bool OnWMSysCommand();
 
+private:
+	bool OnEditControlNotify(WPARAM wPara, LPARAM lPara);
+
 
 // 实现查找功能
 private:
@@ -48,6 +51,15 @@ private:
 	bool OnOpenFile();
 	bool LoadTextFile();
 	HANDLE hOpenFile;   //打开的文件句柄
+
+
+
+private:
+	BOOL bUntitled;    //本地磁盘上是否有文件
+	BOOL bSaved;       // 有没有保存
+
+
+
 
 private:
 	HINSTANCE m_hInstance; // 当前进程实例句柄

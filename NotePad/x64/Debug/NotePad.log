@@ -1,5 +1,3 @@
 ﻿  NotePad.cpp
-C:\Users\GaoXing\Desktop\NotePad\NotePad\NotePad.cpp(156,88): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
-  main.cpp
-  正在生成代码...
+C:\Users\GaoXing\Desktop\NotePad\NotePad\NotePad.cpp(153,88): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
   NotePad.vcxproj -> C:\Users\GaoXing\Desktop\NotePad\x64\Debug\NotePad.exe
