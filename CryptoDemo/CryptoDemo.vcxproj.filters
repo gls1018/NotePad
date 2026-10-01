@@ -18,24 +18,5 @@
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="NotePad.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="TextCodec.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="NotePad.h">
-      <Filter>源文件</Filter>
-    </ClInclude>
-    <ClInclude Include="TextCodec.h">
-      <Filter>源文件</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="notepad.ico">
-      <Filter>资源文件</Filter>
-    </Image>
   </ItemGroup>
 </Project>

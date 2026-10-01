@@ -5,6 +5,8 @@
 #include <vector>
 #include <chrono>
 #include <print>
+#include <bitset>
+#include <memory>
 #include <dwmapi.h>
 #include <Commdlg.h>
 #pragma comment(lib, "dwmapi.lib")
@@ -29,6 +31,18 @@
 #define IDM_EDIT_REPLACE 2009
 
 #define IDC_EDIT 3000
+
+
+enum TextEncoding{
+	UnKnown = 0x0,
+	UTF8 = 0x1,
+	UTF8_BOM = 0x2,
+	UTF16_LE = 0x3,
+	UTF16_BE = 0x4,
+	UTF32_LE = 0x5,
+	UTF32_BE = 0x6
+};
+
 NotePad::NotePad(HINSTANCE hIns)
 {
 	this->m_hInstance = hIns;
@@ -325,6 +339,10 @@ bool NotePad::OnOpenFile()
 	BOOL bRes = GetOpenFileNameW(&OpenFileName);
 	if(!bRes)
 		throw std::runtime_error("GetOpenFileNameW Error\n");
+	// 这里 FileNameBuffer 就是用户选择的文件路径.
+	// 接下来将 FileNameBuffer 指向的文件内容加载到 m_EditControl 上.
+	
+	LoadTextFile();
 
 	return true;
 }
@@ -337,6 +355,7 @@ bool NotePad::LoadTextFile()
 	if (hOpenFile == INVALID_HANDLE_VALUE)
 		throw std::runtime_error("CreateFile Error\n");
 
+	// 获取到 File大小
 	DWORD dwFileSize = GetFileSize(hOpenFile, NULL);
 	if (dwFileSize == INVALID_FILE_SIZE)
 	{
@@ -344,44 +363,167 @@ bool NotePad::LoadTextFile()
 		this->hOpenFile = NULL;
 		throw std::runtime_error("GetFileSize Error\n");
 	}
+	this->m_FileContent = std::move(std::vector<uint8_t>(dwFileSize));
 
-
-
-	std::vector<BYTE> buffer(dwFileSize);
 	DWORD dwByteRead = 0;
-	if (!ReadFile(hOpenFile, buffer.data(), dwFileSize, &dwByteRead, NULL))
+	if (!ReadFile(hOpenFile, m_FileContent.data(), dwFileSize, &dwByteRead, NULL))
 		throw std::runtime_error("ReadFile Error\n");
+	int FileEncode = this->DetectTextEncoding(m_FileContent);
 
-	// 判断编码
-	if (dwByteRead >= 3 &&
-		buffer[0] == 0xEF &&
-		buffer[1] == 0xBB &&
-		buffer[2] == 0xBF)
-	{
-		//UTF-8 BOM
-
-	}
-	
-	else if (dwByteRead >= 2 &&
-		buffer[0] == 0xFF &&
-		buffer[1] == 0xFE)
-	{
-		// UTF-16 LE
-	}
-
-	else if (dwByteRead >= 2 &&
-		buffer[0] == 0xFE &&
-		buffer[1] == 0xFF)
-	{
-		// UTF-16 BE
-	}
-
+#ifdef _DEBUG
+	if (FileEncode == TextEncoding::UTF8)
+		std::cout << "UTF8\n";
+	else if (FileEncode == TextEncoding::UTF8_BOM)
+		std::cout << "UTF8_BOM\n";
+	else if (FileEncode == TextEncoding::UTF16_LE)
+		std::cout << "UTF16_LE\n";
+	else if (FileEncode == TextEncoding::UTF16_BE)
+		std::cout << "UTF16_BE\n";
+	else if (FileEncode == TextEncoding::UTF32_LE)
+		std::cout << "UTF32_LE\n";
+	else if (FileEncode == TextEncoding::UTF32_BE)
+		std::cout << "UTF32_BE\n";
 	else
-	{
+		std::cout << "UnKnown\n";
+#endif // _DEBUG
 
+	if (FileEncode == TextEncoding::UTF8)
+		SetWindowTextA(this->m_hEditControl, (const char*)m_FileContent.data());
+	else if (FileEncode == TextEncoding::UTF16_LE)
+		SetWindowTextW(this->m_hEditControl, (const wchar_t*)m_FileContent.data());
+	return true;
+}
+
+// 检测txt文件使用的编码
+int NotePad::DetectTextEncoding(const std::vector<uint8_t>& data)
+{
+	if (data.size() >= 4)
+	{
+		if (data[0] == 0xFF &&
+			data[1] == 0xFE &&
+			data[2] == 0x00 &&
+			data[3] == 0x00)
+		{
+			return TextEncoding::UTF32_LE;
+		}
+
+		if (data[0] == 0x00 &&
+			data[1] == 0x00 &&
+			data[2] == 0xFE &&
+			data[3] == 0xFF)
+		{
+			return TextEncoding::UTF32_BE;
+		}
+	}
+
+	if (data.size() >= 3)
+	{
+		if (data[0] == 0xEF &&
+			data[1] == 0xBB &&
+			data[2] == 0xBF)
+		{
+			return TextEncoding::UTF8_BOM;
+		}
+	}
+
+	if (data.size() >= 2)
+	{
+		if (data[0] == 0xFF &&
+			data[1] == 0xFE)
+		{
+			return TextEncoding::UTF16_LE;
+		}
+
+		if (data[0] == 0xFE &&
+			data[1] == 0xFF)
+		{
+			return TextEncoding::UTF16_BE;
+		}
+	}
+	if (IsValidUtf8NoBOM(data))
+		return TextEncoding::UTF8;
+
+	return TextEncoding::UnKnown;
+}
+
+// 检测是不是 UTF8 No BOM 编码格式
+bool NotePad::IsValidUtf8NoBOM(const std::vector<uint8_t>& data)
+{
+	//下面代码检测的是UTF8的合法性
+	if (data.size() >= 3 &&
+		data[0] == 0xEF &&
+		data[1] == 0xBB &&
+		data[2] == 0xBF)
+	{
+		// 有 BOM，不是 UTF-8 No BOM
+		return false;
+	}
+
+	size_t i = 0;
+	while (i < data.size())
+	{
+		// 1Byte 0xxx'xxxx
+		if (data[i] <= 0x7F)
+		{
+			++i;
+			continue;
+		}
+
+		//2Byte 110xxxxx 10xxxxxx
+		if (data[i] >= 0xC2 && data[i] <= 0xDF)
+		{
+			if (i + 1 > data.size())
+				return false;
+			if (data[i + 1] < 0x80 || data[i + 1] > 0xBF)
+				return false;
+			i = i + 2;
+			continue;
+		}
+
+		//3Byte  1110xxxx 10xxxxxx 10xxxxxx
+		if (data[i] >= 0xE0 && data[i] <= 0xEF)
+		{
+			if (i + 2 > data.size())
+				return false;
+			if (data[i + 1] < 0x80 || data[i + 1] > 0xBF)
+				return false;
+
+			if (data[i + 2] < 0x80 || data[i + 2] > 0xBF)
+				return false;
+			i = i + 3;
+			continue;
+		}
+
+		//4Byte 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+		if (data[i] >= 0xF0 && data[i] <= 0xF7)
+		{
+			if (i + 3 > data.size())
+				return false;
+
+			if (data[i + 1] < 0x80 || data[i + 1] > 0xBF)
+				return false;
+
+			if (data[i + 2] < 0x80 || data[i + 2] > 0xBF)
+				return false;
+
+			if (data[i + 3] < 0x80 || data[i + 3] > 0xBF)
+				return false;
+
+			// 防止超过 U+10FFFF    
+			// UTF8 表示 F4 8F BF BF
+			if (data[i] == 0xF4)
+			{
+				if (*reinterpret_cast<const DWORD*>(&data[i]) > 0xF48FBFBF)
+					return false;
+			}
+			i = i + 4;
+			continue;
+		}
+		return false;
 	}
 	return true;
 }
+
 
 bool NotePad::CreateMainWindow()
 {

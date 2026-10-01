@@ -1,5 +1,10 @@
 ﻿#pragma once
 #include <windows.h>
+#include <type_traits>
+#include <vector>
+#include <string>
+#include <iostream>
+
 
 class NotePad
 {
@@ -52,7 +57,11 @@ private:
 	bool LoadTextFile();
 	HANDLE hOpenFile;   //打开的文件句柄
 
+	std::vector<uint8_t> m_FileContent;
 
+
+	int DetectTextEncoding(const std::vector<uint8_t>& data); 
+	bool IsValidUtf8NoBOM(const std::vector<uint8_t>& data);
 
 private:
 	BOOL bUntitled;    //本地磁盘上是否有文件
